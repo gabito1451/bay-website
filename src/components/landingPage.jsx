@@ -14,7 +14,7 @@ const LandingPage = () => {
   });
 
   return (
-    <div className="max-w-6xl m-auto border border-solid border-red-500 w-full px-4 bg-gray-100">
+    <div className="max-w-6xl m-auto  w-full px-4 bg-gray-100">
       <div className="flex justify-between items-center mt-5">
         <img src="./Assets/baylogo.png" className="w-18 h-14 rounded-full" />
         <div className="relative">
