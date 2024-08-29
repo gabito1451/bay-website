@@ -5,6 +5,7 @@ export const foodItems = [
     category: "Burger",
     price: "250.0",
     image: "/Assets/hamburger.jfif",
+    description: "llsjhvcdxbnmxslkjhgfdfnmnbvcx",
   },
   {
     id: 2,
