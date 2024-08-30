@@ -7,6 +7,18 @@ const LandingPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [selectedItem, setSelectedItem] = useState(null); // State for selected food item
 
+  const [count, setCount] = useState(1);
+
+  const increment = () => {
+    setCount((prevCount) => prevCount + 1);
+  };
+
+  const decrement = () => {
+    if (count > 1) {
+      setCount((prevCount) => prevCount - 1);
+    }
+  };
+
   const filteredFoodItems = foodItems.filter((item) => {
     const matchesCategory =
       selectedCategory === "All" || item.category === selectedCategory;
@@ -45,8 +57,7 @@ const LandingPage = () => {
         </div>
       </div>
       <h1 className="text-2xl font-bold mt-5">
-        Choose <br />
-        Your favourite <span className="text-red-500">Food</span>
+        Choose Your favourite <span className="text-red-500">Food</span>
       </h1>
       <input
         type="text"
@@ -80,7 +91,7 @@ const LandingPage = () => {
         {filteredFoodItems.map((item) => (
           <div
             key={item.id}
-            className="rounded-xl p-4 shadow-md bg-white min-w-48"
+            className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
             onClick={() => openModal(item)} // Open modal on click
           >
             <img
@@ -108,7 +119,7 @@ const LandingPage = () => {
         {filteredFoodItems.map((item) => (
           <div
             key={item.id}
-            className="rounded-xl p-4 shadow-md bg-white min-w-48"
+            className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
             onClick={() => openModal(item)}
           >
             <img
@@ -147,17 +158,23 @@ const LandingPage = () => {
             <p className="flex justify-between">
               <p className="text-gray-500">{selectedItem.category}</p>
               <p className="text-lg font-bold text-red-600">
-                Rs. {selectedItem.price}
+                {`Rs. ${selectedItem.price * count}`}
               </p>
             </p>
 
             <div className="flex justify-between items-center mt-4">
               <div className="flex items-center">
-                <button className="text-red-600 border border-red-600 rounded-lg px-2 h-9">
+                <button
+                  onClick={decrement}
+                  className="text-red-600 border border-red-600 rounded-lg px-2 h-9"
+                >
                   -
                 </button>
-                <span className="mx-4">1</span>
-                <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
+                <span className="mx-4">{count}</span>
+                <button
+                  onClick={increment}
+                  className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9"
+                >
                   +
                 </button>
               </div>
