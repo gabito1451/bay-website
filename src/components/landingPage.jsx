@@ -7,6 +7,11 @@ const LandingPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [selectedItem, setSelectedItem] = useState(null); // State for selected food item
 
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
+  const openCardModal = () => setIsCardModalOpen(true);
+  const closeCardModal = () => setIsCardModalOpen(false);
+
   const [count, setCount] = useState(1);
 
   const increment = () => {
@@ -50,6 +55,7 @@ const LandingPage = () => {
             src="/Assets/shopping-cart-svgrepo-com.svg"
             alt="Cart"
             className="w-8 h-8 relative"
+            onClick={openCardModal}
           />
           <p className="absolute bottom-6 left-6 text-white text-xs w-3 h-fit rounded-full text-center bg-red-500 border border-solid border-red-600">
             0
@@ -185,6 +191,46 @@ const LandingPage = () => {
             <p className="mt-4 text-gray-500">
               {selectedItem.description || "No description available."}
             </p>
+            <div>
+              <p>Phone Number :</p>
+              <input
+                placeholder="Input your Number "
+                className="border border-solid border-red-600 outline-none rounded-full p-2 text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* card modal */}
+
+      {isCardModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full">
+            <button
+              className="absolute top-4 right-4 text-white bg-red-500 rounded-full p-1"
+              onClick={closeCardModal}
+            >
+              X
+            </button>
+            <div className="flex items-center">
+              <img
+                src="https://example.com/schweppes-can.jpg"
+                alt="Schweppes"
+                className="w-12 h-12 mr-4"
+              />
+              <div>
+                <h2 className="text-lg font-semibold">Schweppes</h2>
+                <p>1 × ₦1,000</p>
+              </div>
+            </div>
+            <div className="mt-6">
+              <p className="text-sm">SUBTOTAL:</p>
+              <p className="text-2xl font-bold text-yellow-500">₦1,000</p>
+            </div>
+            <button className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400">
+              Make Payment
+            </button>
           </div>
         </div>
       )}
