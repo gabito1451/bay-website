@@ -1,13 +1,46 @@
-import React, { useState } from "react";
-import { foodItems } from "./foodItems/foodItem";
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
+
+
+const AccordionItem = ({ title, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-gray-200">
+      <button
+        className="w-full text-left px-4 py-2 focus:outline-none flex justify-between items-center"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="text-lg font-medium">{title}</span>
+        <span
+          className="transform transition-transform duration-300"
+          style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0)" }}
+        >
+          ⌄
+        </span>
+      </button>
+      {isOpen && <div className="px-4 py-2">{children}</div>}
+    </div>
+  );
+};
 
 const LandingPage = () => {
+  const endpoint = "https://localhost/wb/api";
+  const mediaEndpoint = "https://localhost/wb/staff/Uploads/";
+  const [stockItems, setStockItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [phone, setPhone] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+  const [cart, setCart] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState({
+    state: false,
+    itemObject: {},
+  }); // Modal visibility state
   const [selectedItem, setSelectedItem] = useState(null); // State for selected food item
 
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const openCardModal = () => setIsCardModalOpen(true);
   const closeCardModal = () => setIsCardModalOpen(false);
@@ -24,26 +57,59 @@ const LandingPage = () => {
     }
   };
 
-  const filteredFoodItems = foodItems.filter((item) => {
+  useEffect(() => {
+    fetch(`${endpoint}/menu.php`)
+      .then((res) => res.json())
+      .then((res) => {
+        setStockItems(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  const filteredStockItems = stockItems.filter((item) => {
     const matchesCategory =
-      selectedCategory === "All" || item.category === selectedCategory;
-    const matchesSearchQuery = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      selectedCategory === "All" || item.Department === selectedCategory;
+    const matchesSearchQuery = item.Item.toLowerCase().includes(
+      searchQuery.toLowerCase()
+    );
     return matchesCategory && matchesSearchQuery;
   });
 
   const openModal = (item) => {
     setSelectedItem(item); // Set the selected item
-    setIsModalOpen(true); // Open the modal
+    setIsModalOpen({ state: true, item }); // Open the modal
   };
 
   const closeModal = () => {
-    setIsModalOpen(false); // Close the modal
+    setCount(1);
+    setIsModalOpen({ ...isModalOpen, state: false }); // Close the modal
+  };
+
+  const addToCart = () => {
+    if (phone == "") {
+      alert("Phone number cannot be empty");
+    } else {
+      try {
+        setCart([
+          ...cart,
+          {
+            ...selectedItem,
+            total: Number(selectedItem.PPrice) * count,
+            quantity: count,
+            phone,
+          },
+        ]);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    closeModal();
   };
 
   return (
-    <div className="max-w-6xl m-auto w-full px-4 bg-gray-100">
+    <div className="max-w-6xl m-auto w-full overflow-y-auto hide-scrollbar h-[100vh] px-4 bg-gray-100">
       <div className="flex justify-between items-center pt-5">
         <img
           src="./Assets/baylogo.png"
@@ -57,13 +123,13 @@ const LandingPage = () => {
             className="w-8 h-8 relative"
             onClick={openCardModal}
           />
-          <p className="absolute bottom-6 left-6 text-white text-xs w-3 h-fit rounded-full text-center bg-red-500 border border-solid border-red-600">
-            0
+          <p className="absolute bottom-6 left-2 text-white text-xs w-fit h-fit rounded-full text-center bg-red-500 border border-solid flex justify-center items-center px-1 border-red-600">
+            {cart.length}
           </p>
         </div>
       </div>
       <h1 className="text-2xl font-bold mt-5">
-        Choose Your favourite <span className="text-red-500">Food</span>
+        Our <span className="text-red-500">Menu</span>
       </h1>
       <input
         type="text"
@@ -74,69 +140,56 @@ const LandingPage = () => {
       />
       <div className="mt-8 flex justify-left">
         <div className="hide-scrollbar flex justify-around gap-4 overflow-y-hidden">
-          {["All", "Pizza", "Burger", "Sandwich"].map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full min-w-24 ${
-                selectedCategory === category
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-600"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
+          <button
+            onClick={() => setSelectedCategory("All")}
+            className={`px-4 py-2 rounded-full min-w-24 ${
+              selectedCategory === "All"
+                ? "bg-red-600 text-white"
+                : "bg-white text-gray-600"
+            }`}
+          >
+            All
+          </button>
+          {[...new Set(stockItems.map((item) => item.Department))].map(
+            (category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full min-w-24 ${
+                  selectedCategory === category
+                    ? "bg-red-600 text-white"
+                    : "bg-white text-gray-600"
+                }`}
+              >
+                {category}
+              </button>
+            )
+          )}
         </div>
       </div>
       <div className="flex justify-between items-center mt-3 mb-1">
-        <h2 className="text-lg font-bold">Popular Food</h2>
-        <button className="text-red-600">See All</button>
+        <h2 className="text-lg font-bold">Categories</h2>
       </div>
-      <div className="flex gap-4 overflow-y-hidden mt-2 hide-scrollbar">
-        {filteredFoodItems.map((item) => (
+      <div className="flex gap-4 overflow-y-hidden h-fit flex-wrap py-4 mt-2 hide-scrollbar">
+        {filteredStockItems.map((item) => (
           <div
             key={item.id}
             className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
             onClick={() => openModal(item)} // Open modal on click
           >
             <img
-              src={item.image}
+              src={`${mediaEndpoint}${item.Image}`}
               alt={item.name}
               className="w-full h-32 object-cover mb-4"
             />
-            <h3 className="text-lg font-semibold">{item.name}</h3>
-            <p className="text-gray-500">{item.category}</p>
+            <h3 className="text-lg w-56 overflow-hidden text-ellipsis font-semibold">
+              {item.Item}
+            </h3>
+            <p className="text-gray-500">{item.Department}</p>
             <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-bold">Rs. {item.price}</span>
-              <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
-                +
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-between items-center mt-3 mb-1">
-        <h2 className="text-lg font-bold">Nearest</h2>
-        <button className="text-red-600">See All</button>
-      </div>
-      <div className="flex gap-4 overflow-y-hidden mt-2 hide-scrollbar">
-        {filteredFoodItems.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
-            onClick={() => openModal(item)}
-          >
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-full h-32 object-cover mb-4"
-            />
-            <h3 className="text-lg font-semibold">{item.name}</h3>
-            <p className="text-gray-500">{item.category}</p>
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-bold">Rs. {item.price}</span>
+              <span className="text-lg font-bold">
+                ₦{Number(item.PPrice).toLocaleString()}
+              </span>
               <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
                 +
               </button>
@@ -146,27 +199,27 @@ const LandingPage = () => {
       </div>
 
       {/* Modal Component */}
-      {isModalOpen && selectedItem && (
+      {isModalOpen.state && selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">{selectedItem.name}</h2>
+              <h2 className="text-2xl font-bold">{selectedItem.Name}</h2>
               <button onClick={closeModal} className="text-xl font-bold">
                 &times;
               </button>
             </div>
             <img
-              src={selectedItem.image}
-              alt={selectedItem.name}
+              src={`${mediaEndpoint}${selectedItem.Image}`}
+              alt={selectedItem.Name}
               className="w-full h-64 object-cover my-4"
             />
 
-            <p className="flex justify-between">
-              <p className="text-gray-500">{selectedItem.category}</p>
+            <div className="flex justify-between">
+              <p className="text-gray-500">{selectedItem.Department}</p>
               <p className="text-lg font-bold text-red-600">
-                {`Rs. ${selectedItem.price * count}`}
+                {`₦${selectedItem.PPrice * count}`}
               </p>
-            </p>
+            </div>
 
             <div className="flex justify-between items-center mt-4">
               <div className="flex items-center">
@@ -184,18 +237,23 @@ const LandingPage = () => {
                   +
                 </button>
               </div>
-              <button className="text-white bg-red-600 border border-red-600 rounded-lg px-4 h-9">
+              <button
+                onClick={addToCart}
+                className="text-white bg-red-600 border border-red-600 rounded-lg px-4 h-9"
+              >
                 Add to Cart
               </button>
             </div>
-            <p className="mt-4 text-gray-500">
-              {selectedItem.description || "No description available."}
-            </p>
             <div>
-              <p>Phone Number :</p>
+              <p className=" my-2 font-bold">Phone Number:</p>
               <input
-                placeholder="Input your Number "
-                className="border border-solid border-red-600 outline-none rounded-full p-2 text-xs"
+                type="tel"
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                }}
+                value={phone}
+                placeholder="Input your Number"
+                className="border border-solid border-red-600 outline-none w-full rounded-full px-4 py-2 text-md"
               />
             </div>
           </div>
@@ -205,28 +263,91 @@ const LandingPage = () => {
       {/* card modal */}
 
       {isCardModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center hide-scrollbar py-10 items-center">
+          <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full relative">
             <button
-              className="absolute top-4 right-4 text-white bg-red-500 rounded-full p-1"
+              className="absolute text-xl top-1 right-4 text-white rounded-full p-1"
               onClick={closeCardModal}
             >
-              X
+              ×
             </button>
-            <div className="flex items-center">
-              <img
-                src="https://example.com/schweppes-can.jpg"
-                alt="Schweppes"
-                className="w-12 h-12 mr-4"
-              />
-              <div>
-                <h2 className="text-lg font-semibold">Schweppes</h2>
-                <p>1 × ₦1,000</p>
+            {cart.map((item, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <div className="flex mt-3">
+                  <img
+                    src={`${mediaEndpoint}${item.Image}`}
+                    alt={item.Item}
+                    className="w-12 h-12 mr-4"
+                  />
+                  <div>
+                    <h2 className="text-lg font-semibold">{item.Item}</h2>
+                    <p>
+                      {item.quantity} × ₦{Number(item.PPrice).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <span className="cursor-pointer text-red-600" onClick={() => {
+                  setCart(cart.filter((cartItem) => cartItem.id !== item.id))
+                }}>Clear</span>
               </div>
-            </div>
+            ))}
             <div className="mt-6">
-              <p className="text-sm">SUBTOTAL:</p>
-              <p className="text-2xl font-bold text-yellow-500">₦1,000</p>
+              <p className="text-sm">TOTAL:</p>
+              <p className="text-2xl font-bold text-yellow-500">
+                ₦
+                {cart
+                  .reduce((accumulator, currentItem) => {
+                    return accumulator + currentItem.total;
+                  }, 0)
+                  .toLocaleString()}
+              </p>
+            </div>
+            <button className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400">
+              Make Payment
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center hide-scrollbar py-10 items-center">
+          <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full relative">
+            <button
+              className="absolute text-xl top-1 right-4 text-white rounded-full p-1"
+              onClick={closeCardModal}
+            >
+              ×
+            </button>
+            {cart.map((item, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <div className="flex mt-3">
+                  <img
+                    src={`${mediaEndpoint}${item.Image}`}
+                    alt={item.Item}
+                    className="w-12 h-12 mr-4"
+                  />
+                  <div>
+                    <h2 className="text-lg font-semibold">{item.Item}</h2>
+                    <p>
+                      {item.quantity} × ₦{Number(item.PPrice).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <span className="cursor-pointer text-red-600" onClick={() => {
+                  setCart(cart.filter((cartItem) => cartItem.id !== item.id))
+                }}>Clear</span>
+              </div>
+            ))}
+            <div className="mt-6">
+              <p className="text-sm">TOTAL:</p>
+              <p className="text-2xl font-bold text-yellow-500">
+                ₦
+                {cart
+                  .reduce((accumulator, currentItem) => {
+                    return accumulator + currentItem.total;
+                  }, 0)
+                  .toLocaleString()}
+              </p>
             </div>
             <button className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400">
               Make Payment
