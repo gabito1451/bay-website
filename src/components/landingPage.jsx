@@ -140,13 +140,13 @@ const LandingPage = () => {
     <div className="max-w-6xl relative m-auto w-full overflow-y-auto hide-scrollbar h-[100vh] px-4 bg-gray-100">
       <div className="flex justify-between items-center pt-5">
         <img
-          src="./assets/baylogo.png"
+          src="./Assets/baylogo.png"
           className="w-18 h-14 rounded-full"
           alt="Logo"
         />
         <div className="relative">
           <img
-            src="./assets/shopping-cart-svgrepo-com.svg"
+            src="./Assets/shopping-cart-svgrepo-com.svg"
             alt="Cart"
             className="w-8 h-8 relative"
             onClick={openCardModal}
@@ -162,7 +162,7 @@ const LandingPage = () => {
       <input
         type="text"
         placeholder="Search"
-        className="w-full bg-[url('./assets/search-svgrepo-com.svg')] bg-[length:20px_20px] bg-[position:10px_center] bg-no-repeat py-5 px-8 mt-8 h-6 rounded-full border-none"
+        className="w-full bg-[url('./Assets/search-svgrepo-com.svg')] bg-[length:20px_20px] bg-[position:10px_center] bg-no-repeat py-5 px-8 mt-8 h-6 rounded-full border-none"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
