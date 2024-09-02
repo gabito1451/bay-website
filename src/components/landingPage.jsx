@@ -166,8 +166,8 @@ const LandingPage = () => {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <div className="mt-8 flex justify-left">
-        <div className="hide-scrollbar flex justify-around gap-4 overflow-y-auto">
+      <div className="mt-8 mb-14 flex justify-left">
+        <div className="hide-scrollbar flex justify-around gap-4 overflow-x-auto">
           <button
             onClick={() => setSelectedCategory("All")}
             className={`px-4 py-2 rounded-full min-w-24 ${
@@ -195,36 +195,53 @@ const LandingPage = () => {
           )}
         </div>
       </div>
-      <div className="flex justify-between items-center mt-3 mb-1">
-        <h2 className="text-lg font-bold">Categories</h2>
-      </div>
-      <div className="flex gap-4 h-fit flex-wrap py-10 overflow-y-auto hide-scrollbar">
-        {filteredStockItems.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
-            onClick={() => openModal(item)} // Open modal on click
-          >
-            <img
-              src={`${mediaEndpoint}${item.Image}`}
-              alt={item.name}
-              className="w-full h-32 object-cover mb-4"
-            />
-            <h3 className="text-lg w-56 text-ellipsis font-semibold">
-              {item.Item}
-            </h3>
-            <p className="text-gray-500">{item.Department}</p>
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-bold">
-                ₦{Number(item.PPrice).toLocaleString()}
-              </span>
-              <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
-                +
-              </button>
+      {[...new Set(stockItems.map((item) => item.Department))].map(
+        (category, index) => (
+          <>
+            <div className="flex justify-between items-center mt-3 mb-1">
+              <h2 key={index} className="text-lg font-bold">
+                {selectedCategory == "All"
+                  ? category
+                  : category !== selectedCategory
+                  ? ""
+                  : category}
+              </h2>
             </div>
-          </div>
-        ))}
-      </div>
+            <div
+              key={index}
+              className="flex gap-4 h-fit py-10 overflow-x-auto hide-scrollbar"
+            >
+              {filteredStockItems
+                .filter((item) => item.Department == category)
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
+                    onClick={() => openModal(item)} // Open modal on click
+                  >
+                    <img
+                      src={`${mediaEndpoint}${item.Image}`}
+                      alt={item.name}
+                      className="w-full h-32 object-cover mb-4"
+                    />
+                    <h3 className="text-lg w-56 text-ellipsis font-semibold">
+                      {item.Item}
+                    </h3>
+                    <p className="text-gray-500">{item.Department}</p>
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-lg font-bold">
+                        ₦{Number(item.PPrice).toLocaleString()}
+                      </span>
+                      <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )
+      )}
 
       {/* Modal Component */}
       {isModalOpen.state && selectedItem && (
@@ -388,7 +405,7 @@ const LandingPage = () => {
                         cart.reduce((accumulator, currentItem) => {
                           return accumulator + currentItem.total;
                         }, 0) / Number(admin[0].ExchangeRate)
-                      ).toFixed(5)}
+                      ).toFixed(3)}
                     </span>
                     <code className="text-center">
                       Account Number: {admin[0].BaccountNumber}
@@ -429,7 +446,7 @@ const LandingPage = () => {
                         cart.reduce((accumulator, currentItem) => {
                           return accumulator + currentItem.total;
                         }, 0) / Number(admin[0].ExchangeRate)
-                      ).toFixed(5)}
+                      ).toFixed(3)}
                     </span>
                     <code className="text-center text-sm">
                       {admin[0].MainBTCwallet}
@@ -464,7 +481,7 @@ const LandingPage = () => {
                         cart.reduce((accumulator, currentItem) => {
                           return accumulator + currentItem.total;
                         }, 0) / Number(admin[0].ExchangeRate)
-                      ).toFixed(5)}
+                      ).toFixed(3)}
                     </span>
                     <code className="text-center text-sm">
                       {admin[0].USDTWalletAddr}
