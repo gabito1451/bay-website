@@ -1,32 +1,12 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-
-const AccordionItem = ({ title, children }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border-b border-gray-200">
-      <button
-        className="w-full text-left px-4 py-2 focus:outline-none flex justify-between items-center"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="text-lg font-medium">{title}</span>
-        <span
-          className="transform transition-transform duration-300"
-          style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0)" }}
-        >
-          ⌄
-        </span>
-      </button>
-      {isOpen && <div className="px-4 py-2">{children}</div>}
-    </div>
-  );
-};
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LandingPage = () => {
-  const endpoint = "https://localhost/wb/api";
-  const mediaEndpoint = "https://localhost/wb/staff/Uploads/";
+  const endpoint = "https://whitebay.org/api";
+  const mediaEndpoint = "https://whitebay.org/staff/Uploads/";
   const [stockItems, setStockItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [address, setAddress] = useState("");
@@ -125,7 +105,13 @@ const LandingPage = () => {
 
   const addToCart = () => {
     if (phone == "" && phone.length < 5) {
-      alert("Put a valid phone number");
+      toast("Use a valid phone number!", {
+        position: "top-right",
+        autoClose: 5000,
+        type: "error",
+        theme: "light",
+      });
+      return;
     } else {
       try {
         setCart([
@@ -137,7 +123,12 @@ const LandingPage = () => {
             phone,
           },
         ]);
-        alert("Added to cart")
+        toast("Added to cart", {
+          position: "top-right",
+          autoClose: 5000,
+          type: "success",
+          theme: "light",
+        });
       } catch (error) {
         console.log(error);
       }
@@ -146,7 +137,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="max-w-6xl m-auto w-full overflow-y-auto hide-scrollbar h-[100vh] px-4 bg-gray-100">
+    <div className="max-w-6xl relative m-auto w-full overflow-y-auto hide-scrollbar h-[100vh] px-4 bg-gray-100">
       <div className="flex justify-between items-center pt-5">
         <img
           src="./Assets/baylogo.png"
@@ -207,7 +198,7 @@ const LandingPage = () => {
       <div className="flex justify-between items-center mt-3 mb-1">
         <h2 className="text-lg font-bold">Categories</h2>
       </div>
-      <div className="flex gap-4 h-fit flex-wrap py-32 mt-20 overflow-y-auto hide-scrollbar">
+      <div className="flex gap-4 h-fit flex-wrap py-10 overflow-y-auto hide-scrollbar">
         {filteredStockItems.map((item) => (
           <div
             key={item.id}
@@ -516,42 +507,58 @@ const LandingPage = () => {
               )}
               <button
                 onClick={() => {
-                    const formData = new FormData();
-                    if (fileBlob) {
-                      formData.append("txtphoton", fileBlob);
-                      const orders = cart.map((item) => ({
-                        Item: item.Item,
-                        Phone: item.phone,
-                        Quantity: Number(item.quantity),
-                        Price: Number(item.PPrice),
-                        Image: item.Image,
-                        Department: item.Department,
-                        ItemId: item.id,
-                        userAddress: address,
-                      }));
+                  const formData = new FormData();
+                  if (fileBlob) {
+                    formData.append("txtphoton", fileBlob);
+                    const orders = cart.map((item) => ({
+                      Item: item.Item,
+                      Phone: item.phone,
+                      Quantity: Number(item.quantity),
+                      Price: Number(item.PPrice),
+                      Image: item.Image,
+                      Department: item.Department,
+                      ItemId: item.id,
+                      userAddress: address,
+                    }));
 
-                      formData.append("orders", JSON.stringify(orders));
+                    formData.append("orders", JSON.stringify(orders));
 
-                      alert("Submitting order...");
+                    var id = toast.loading("Submitting order...", {
+                      autoClose: 5000,
+                    });
 
-                      fetch(`${endpoint}/order.php`, {
-                        method: "POST",
-                        body: formData,
-                      })
-                        .then((response) => response.text())
-                        .then((result) => {
-                          console.log(result);
-                          alert("Order placed successfully!");
-                          console.log(result);
-                          setIsPaymentModalOpen(false);
-                          setCart([]);
-                        })
-                        .catch((error) => {
-                          console.error("Error:", error);
+                    fetch(`${endpoint}/order.php`, {
+                      method: "POST",
+                      body: formData,
+                    })
+                      .then((response) => response.text())
+                      .then((result) => {
+                        console.log(result);
+                        toast.update(id, {
+                          render: "Order submitted",
+                          type: "success",
+                          autoClose: 3000,
+                          isLoading: false,
                         });
-                    } else {
-                      alert("Upload proof of payment");
-                    }
+                        console.log(result);
+                        setIsPaymentModalOpen(false);
+                        setCart([]);
+                      })
+                      .catch((error) => {
+                        toast.update(id, {
+                          render: "Something went wrong",
+                          type: "error",
+                          autoClose: 3000,
+                          isLoading: false,
+                        });
+                      });
+                  } else {
+                    toast.info(id, {
+                      render: "Upload proof of payment",
+                      isLoading: false,
+                      autoClose: 3000,
+                    });
+                  }
                 }}
                 className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400"
               >
@@ -561,6 +568,18 @@ const LandingPage = () => {
           </div>
         </div>
       )}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };
