@@ -2,7 +2,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 
-
 const AccordionItem = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,7 +29,26 @@ const LandingPage = () => {
   const mediaEndpoint = "https://localhost/wb/staff/Uploads/";
   const [stockItems, setStockItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [address, setAddress] = useState("");
+  const [openSection, setOpenSection] = useState(null);
+  const [file, setFile] = useState(null);
+  const [fileBlob, setFileBlob] = useState(null);
+
+  const toggleSection = (section) => {
+    if (openSection === section) {
+      setOpenSection(null);
+    } else {
+      setOpenSection(section);
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    setFileBlob(event.target.files[0]);
+    setFile(URL.createObjectURL(event.target.files[0]));
+  };
   const [phone, setPhone] = useState("");
+  const [btcPrice, setBtcPrice] = useState({});
+  const [admin, setAdmin] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState({
@@ -66,6 +84,24 @@ const LandingPage = () => {
       .catch((err) => {
         console.log(err);
       });
+    fetch(`${endpoint}/admin.php`)
+      .then((res) => res.json())
+      .then((res) => {
+        setAdmin(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setBtcPrice(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   const filteredStockItems = stockItems.filter((item) => {
@@ -88,8 +124,8 @@ const LandingPage = () => {
   };
 
   const addToCart = () => {
-    if (phone == "") {
-      alert("Phone number cannot be empty");
+    if (phone == "" && phone.length < 5) {
+      alert("Put a valid phone number");
     } else {
       try {
         setCart([
@@ -101,6 +137,7 @@ const LandingPage = () => {
             phone,
           },
         ]);
+        alert("Added to cart")
       } catch (error) {
         console.log(error);
       }
@@ -139,7 +176,7 @@ const LandingPage = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       <div className="mt-8 flex justify-left">
-        <div className="hide-scrollbar flex justify-around gap-4 overflow-y-hidden">
+        <div className="hide-scrollbar flex justify-around gap-4 overflow-y-auto">
           <button
             onClick={() => setSelectedCategory("All")}
             className={`px-4 py-2 rounded-full min-w-24 ${
@@ -170,7 +207,7 @@ const LandingPage = () => {
       <div className="flex justify-between items-center mt-3 mb-1">
         <h2 className="text-lg font-bold">Categories</h2>
       </div>
-      <div className="flex gap-4 overflow-y-hidden h-fit flex-wrap py-4 mt-2 hide-scrollbar">
+      <div className="flex gap-4 h-fit flex-wrap py-32 mt-20 overflow-y-auto hide-scrollbar">
         {filteredStockItems.map((item) => (
           <div
             key={item.id}
@@ -182,7 +219,7 @@ const LandingPage = () => {
               alt={item.name}
               className="w-full h-32 object-cover mb-4"
             />
-            <h3 className="text-lg w-56 overflow-hidden text-ellipsis font-semibold">
+            <h3 className="text-lg w-56 text-ellipsis font-semibold">
               {item.Item}
             </h3>
             <p className="text-gray-500">{item.Department}</p>
@@ -263,7 +300,7 @@ const LandingPage = () => {
       {/* card modal */}
 
       {isCardModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center hide-scrollbar py-10 items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center overflow-y-auto hide-scrollbar py-10 items-center">
           <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full relative">
             <button
               className="absolute text-xl top-1 right-4 text-white rounded-full p-1"
@@ -286,9 +323,14 @@ const LandingPage = () => {
                     </p>
                   </div>
                 </div>
-                <span className="cursor-pointer text-red-600" onClick={() => {
-                  setCart(cart.filter((cartItem) => cartItem.id !== item.id))
-                }}>Clear</span>
+                <span
+                  className="cursor-pointer text-red-600"
+                  onClick={() => {
+                    setCart(cart.filter((cartItem) => cartItem.id !== item.id));
+                  }}
+                >
+                  Clear
+                </span>
               </div>
             ))}
             <div className="mt-6">
@@ -302,7 +344,13 @@ const LandingPage = () => {
                   .toLocaleString()}
               </p>
             </div>
-            <button className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400">
+            <button
+              onClick={() => {
+                setIsCardModalOpen(false);
+                setIsPaymentModalOpen(true);
+              }}
+              className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400"
+            >
               Make Payment
             </button>
           </div>
@@ -310,48 +358,206 @@ const LandingPage = () => {
       )}
 
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center hide-scrollbar py-10 items-center">
-          <div className="bg-gray-800 text-white p-6 rounded-lg max-w-sm w-full relative">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center overflow-y-auto hide-scrollbar py-10 items-center">
+          <div className="max-w-md mx-auto mt-10 p-6 bg-gray-800 relative text-white rounded-lg shadow-lg">
             <button
               className="absolute text-xl top-1 right-4 text-white rounded-full p-1"
-              onClick={closeCardModal}
+              onClick={() => setIsPaymentModalOpen(false)}
             >
               ×
             </button>
-            {cart.map((item, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <div className="flex mt-3">
-                  <img
-                    src={`${mediaEndpoint}${item.Image}`}
-                    alt={item.Item}
-                    className="w-12 h-12 mr-4"
-                  />
-                  <div>
-                    <h2 className="text-lg font-semibold">{item.Item}</h2>
-                    <p>
-                      {item.quantity} × ₦{Number(item.PPrice).toLocaleString()}
-                    </p>
-                  </div>
+            <h1 className="text-3xl mb-6">
+              Total: ₦
+              {cart
+                .reduce((accumulator, currentItem) => {
+                  return accumulator + currentItem.total;
+                }, 0)
+                .toLocaleString()}
+            </h1>
+
+            <div className="mb-4">
+              <button
+                onClick={() => toggleSection("bank")}
+                className="w-full text-left py-2 px-4 bg-gray-700 rounded-md focus:outline-none"
+              >
+                BANK TRANSFER
+              </button>
+              {openSection === "bank" && (
+                <div className="mt-2 p-4 bg-gray-700 rounded-md transition-all duration-300">
+                  <p className="flex w-full justify-center gap-2 flex-col break-words">
+                    <span className="text-center ">
+                      ₦
+                      {cart
+                        .reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0)
+                        .toLocaleString()}{" "}
+                      ≈ $
+                      {(
+                        cart.reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0) / Number(admin[0].ExchangeRate)
+                      ).toFixed()}
+                    </span>
+                    <code className="text-center">
+                      Account Number: {admin[0].BaccountNumber}
+                    </code>
+                    <code className="text-center">
+                      Account Name: {admin[0].BaccountName}
+                    </code>
+                    <code className="text-center">
+                      Account Bank: {admin[0].BBank}
+                    </code>
+                  </p>
                 </div>
-                <span className="cursor-pointer text-red-600" onClick={() => {
-                  setCart(cart.filter((cartItem) => cartItem.id !== item.id))
-                }}>Clear</span>
-              </div>
-            ))}
-            <div className="mt-6">
-              <p className="text-sm">TOTAL:</p>
-              <p className="text-2xl font-bold text-yellow-500">
-                ₦
-                {cart
-                  .reduce((accumulator, currentItem) => {
-                    return accumulator + currentItem.total;
-                  }, 0)
-                  .toLocaleString()}
-              </p>
+              )}
             </div>
-            <button className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400">
-              Make Payment
-            </button>
+
+            <div className="mb-4">
+              <button
+                onClick={() => toggleSection("btc")}
+                className="w-full text-left py-2 px-4 bg-gray-700 rounded-md focus:outline-none"
+              >
+                PAY WITH BITCOIN
+              </button>
+              {openSection === "btc" && (
+                <div className="mt-2 p-4 bg-gray-700 rounded-md transition-all duration-300">
+                  <p className="flex w-full justify-center gap-2 flex-col break-words">
+                    <img
+                      src={`https://quickchart.io/chart?cht=qr&chs=250x250&chl=${admin.MainBTCwallet}`}
+                    />
+                    <span className="text-center ">
+                      ₦
+                      {cart
+                        .reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0)
+                        .toLocaleString()}{" "}
+                      ≈ $
+                      {(
+                        cart.reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0) / Number(admin[0].ExchangeRate)
+                      ).toFixed()}
+                    </span>
+                    <code className="text-center text-sm">
+                      {admin[0].MainBTCwallet}
+                    </code>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <button
+                onClick={() => toggleSection("usdt")}
+                className="w-full text-left py-2 px-4 bg-gray-700 rounded-md focus:outline-none"
+              >
+                PAY WITH USDT
+              </button>
+              {openSection === "usdt" && (
+                <div className="mt-2 p-4 bg-gray-700 rounded-md transition-all duration-300">
+                  <p className="flex w-full justify-center gap-2 flex-col break-words">
+                    <img
+                      src={`https://quickchart.io/chart?cht=qr&chs=250x250&chl=${admin.USDTWalletAddr}`}
+                    />
+                    <span className="text-center ">
+                      ₦
+                      {cart
+                        .reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0)
+                        .toLocaleString()}{" "}
+                      ≈ $
+                      {(
+                        cart.reduce((accumulator, currentItem) => {
+                          return accumulator + currentItem.total;
+                        }, 0) / Number(admin[0].ExchangeRate)
+                      ).toFixed()}
+                    </span>
+                    <code className="text-center text-sm">
+                      {admin[0].USDTWalletAddr}
+                    </code>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <label className="block mb-2 text-sm font-medium">
+                Delivery Address
+              </label>
+              <input
+                type="text"
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                }}
+                value={address}
+                placeholder="Enter your delivery address"
+                className="w-full p-2 bg-gray-700 rounded-md focus:outline-none"
+              />
+            </div>
+
+            <div className="mt-4">
+              <label className="block mb-2 text-sm font-medium">
+                Upload Proof:
+              </label>
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-600 file:text-white hover:file:bg-gray-500"
+              />
+              {file && (
+                <img
+                  src={file}
+                  alt="Proof of Payment"
+                  className="mt-4 w-48 h-auto rounded-md"
+                />
+              )}
+              <button
+                onClick={() => {
+                    const formData = new FormData();
+                    if (fileBlob) {
+                      formData.append("txtphoton", fileBlob);
+                      const orders = cart.map((item) => ({
+                        Item: item.Item,
+                        Phone: item.phone,
+                        Quantity: Number(item.quantity),
+                        Price: Number(item.PPrice),
+                        Image: item.Image,
+                        Department: item.Department,
+                        ItemId: item.id,
+                        userAddress: address,
+                      }));
+
+                      formData.append("orders", JSON.stringify(orders));
+
+                      alert("Submitting order...");
+
+                      fetch(`${endpoint}/order.php`, {
+                        method: "POST",
+                        body: formData,
+                      })
+                        .then((response) => response.text())
+                        .then((result) => {
+                          console.log(result);
+                          alert("Order placed successfully!");
+                          console.log(result);
+                          setIsPaymentModalOpen(false);
+                          setCart([]);
+                        })
+                        .catch((error) => {
+                          console.error("Error:", error);
+                        });
+                    } else {
+                      alert("Upload proof of payment");
+                    }
+                }}
+                className="mt-6 w-full bg-yellow-500 text-gray-800 font-semibold py-2 rounded-lg hover:bg-yellow-400"
+              >
+                Confirm Payment
+              </button>
+            </div>
           </div>
         </div>
       )}
