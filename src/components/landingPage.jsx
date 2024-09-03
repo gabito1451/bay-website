@@ -28,7 +28,7 @@ const LandingPage = () => {
     setFileBlob(event.target.files[0]);
     setFile(URL.createObjectURL(event.target.files[0]));
   };
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("11-11");
   const [btcPrice, setBtcPrice] = useState({});
   const [admin, setAdmin] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -305,7 +305,14 @@ const LandingPage = () => {
                 Add to Cart
               </button>
             </div>
-            <div>
+            <div
+              style={{
+                display:
+                  tableNumber == "" ||
+                  tableNumber == undefined ||
+                  tableNumber == null ? 'block':'none'
+              }}
+            >
               <p className=" my-2 font-bold">Phone Number:</p>
               <input
                 type="tel"
@@ -545,7 +552,12 @@ const LandingPage = () => {
                     formData.append("txtphoton", fileBlob);
                     const orders = cart.map((item) => ({
                       Item: item.Item,
-                      OrderBy: tableNumber,
+                      OrderBy:
+                        tableNumber == "" ||
+                        tableNumber == undefined ||
+                        tableNumber == null
+                          ? item.phone
+                          : tableNumber,
                       Phone: item.phone,
                       Quantity: Number(item.quantity),
                       Price: Number(item.PPrice),
