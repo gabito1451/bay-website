@@ -5,6 +5,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const LandingPage = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const tableNumber = searchParams.get("table");
   const endpoint = "https://whitebay.org/api";
   const mediaEndpoint = "https://whitebay.org/staff/Uploads/";
   const [stockItems, setStockItems] = useState([]);
@@ -118,7 +120,7 @@ const LandingPage = () => {
           ...cart,
           {
             ...selectedItem,
-            total: Number(selectedItem.PPrice) * count,
+            total: Number(selectedItem.Price) * count,
             quantity: count,
             phone,
           },
@@ -244,7 +246,7 @@ const LandingPage = () => {
                     <p className="text-gray-500">{item.Department}</p>
                     <div className="flex justify-between items-center mt-4">
                       <span className="text-lg font-bold">
-                        ₦{Number(item.PPrice).toLocaleString()}
+                        ₦{Number(item.Price).toLocaleString()}
                       </span>
                       <button className="text-white bg-red-600 border border-red-600 rounded-lg px-2 h-9">
                         +
@@ -276,7 +278,7 @@ const LandingPage = () => {
             <div className="flex justify-between">
               <p className="text-gray-500">{selectedItem.Department}</p>
               <p className="text-lg font-bold text-red-600">
-                {`₦${selectedItem.PPrice * count}`}
+                {`₦${selectedItem.Price * count}`}
               </p>
             </div>
 
@@ -341,7 +343,7 @@ const LandingPage = () => {
                   <div>
                     <h2 className="text-lg font-semibold">{item.Item}</h2>
                     <p>
-                      {item.quantity} × ₦{Number(item.PPrice).toLocaleString()}
+                      {item.quantity} × ₦{Number(item.Price).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -543,6 +545,7 @@ const LandingPage = () => {
                     formData.append("txtphoton", fileBlob);
                     const orders = cart.map((item) => ({
                       Item: item.Item,
+                      OrderBy: tableNumber,
                       Phone: item.phone,
                       Quantity: Number(item.quantity),
                       Price: Number(item.PPrice),
