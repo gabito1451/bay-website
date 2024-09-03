@@ -198,7 +198,15 @@ const LandingPage = () => {
       {[...new Set(stockItems.map((item) => item.Department))].map(
         (category, index) => (
           <>
-            <div className="flex justify-between items-center mt-3 mb-1">
+            <div
+              className={`${
+                selectedCategory == "All"
+                  ? "flex"
+                  : selectedCategory == category
+                  ? "flex"
+                  : "hidden"
+              } justify-between items-center mt-3 mb-1`}
+            >
               <h2 key={index} className="text-lg font-bold">
                 {selectedCategory == "All"
                   ? category
@@ -209,20 +217,26 @@ const LandingPage = () => {
             </div>
             <div
               key={index}
-              className="flex gap-4 h-fit py-10 overflow-x-auto hide-scrollbar"
+              className={`${
+                selectedCategory == "All"
+                  ? "flex"
+                  : selectedCategory == category
+                  ? "flex"
+                  : "hidden"
+              } gap-4 h-fit py-10 overflow-x-auto hide-scrollbar`}
             >
               {filteredStockItems
                 .filter((item) => item.Department == category)
                 .map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48"
+                    className="rounded-xl p-4 shadow-md bg-white min-w-48 max-w-48 "
                     onClick={() => openModal(item)} // Open modal on click
                   >
                     <img
                       src={`${mediaEndpoint}${item.Image}`}
                       alt={item.name}
-                      className="w-full h-32 object-cover mb-4"
+                      className="w-full aspect-square object-cover mb-4"
                     />
                     <h3 className="text-lg w-56 text-ellipsis font-semibold">
                       {item.Item}
