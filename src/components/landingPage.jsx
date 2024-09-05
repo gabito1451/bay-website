@@ -28,7 +28,7 @@ const LandingPage = () => {
     setFileBlob(event.target.files[0]);
     setFile(URL.createObjectURL(event.target.files[0]));
   };
-  const [phone, setPhone] = useState("11-11");
+  const [phone, setPhone] = useState("");
   const [btcPrice, setBtcPrice] = useState({});
   const [admin, setAdmin] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,6 +140,13 @@ const LandingPage = () => {
 
   return (
     <div className="max-w-6xl relative m-auto w-full overflow-y-auto hide-scrollbar h-[100vh] px-4 bg-gray-100">
+      <button
+        style={{ display: cart.length == 0 ? "none" : "block" }}
+        onClick={openCardModal}
+        className="fixed bottom-5 right-5 bg-red-600 text-white py-3 px-6 rounded-full shadow-lg hover:bg-red-700 focus:outline-none"
+      >
+        Confirm Order
+      </button>
       <div className="flex justify-between items-center pt-5">
         <img
           src="./Assets/baylogo.png"
@@ -243,7 +250,6 @@ const LandingPage = () => {
                     <h3 className="text-lg w-56 text-ellipsis font-semibold">
                       {item.Item}
                     </h3>
-                    <p className="text-gray-500">{item.Department}</p>
                     <div className="flex justify-between items-center mt-4">
                       <span className="text-lg font-bold">
                         ₦{Number(item.Price).toLocaleString()}
@@ -310,7 +316,9 @@ const LandingPage = () => {
                 display:
                   tableNumber == "" ||
                   tableNumber == undefined ||
-                  tableNumber == null ? 'block':'none'
+                  tableNumber == null
+                    ? "block"
+                    : "none",
               }}
             >
               <p className=" my-2 font-bold">Phone Number:</p>
@@ -560,7 +568,7 @@ const LandingPage = () => {
                           : tableNumber,
                       Phone: item.phone,
                       Quantity: Number(item.quantity),
-                      Price: Number(item.PPrice),
+                      Price: Number(item.Price),
                       Image: item.Image,
                       Department: item.Department,
                       ItemId: item.id,
