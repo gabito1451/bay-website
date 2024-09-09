@@ -106,15 +106,6 @@ const LandingPage = () => {
   };
 
   const addToCart = () => {
-    if (phone == "" && phone.length < 5) {
-      toast("Use a valid phone number!", {
-        position: "top-right",
-        autoClose: 5000,
-        type: "error",
-        theme: "light",
-      });
-      return;
-    } else {
       try {
         setCart([
           ...cart,
@@ -134,7 +125,6 @@ const LandingPage = () => {
       } catch (error) {
         console.log(error);
       }
-    }
     closeModal();
   };
 
@@ -278,7 +268,7 @@ const LandingPage = () => {
             <img
               src={`${mediaEndpoint}${selectedItem.Image}`}
               alt={selectedItem.Name}
-              className="w-full h-64 object-cover my-4"
+              className="w-full h-64 aspect-square object-cover my-4"
             />
 
             <div className="flex justify-between">
