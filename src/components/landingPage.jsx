@@ -29,7 +29,6 @@ const LandingPage = () => {
     setFile(URL.createObjectURL(event.target.files[0]));
   };
   const [phone, setPhone] = useState("");
-  const [btcPrice, setBtcPrice] = useState({});
   const [admin, setAdmin] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState([]);
@@ -42,7 +41,29 @@ const LandingPage = () => {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-  const openCardModal = () => setIsCardModalOpen(true);
+  const openCardModal = () => {
+    if (tableNumber == "" || tableNumber == undefined || tableNumber == null) {
+      fetch(`${endpoint}/WorkingBot.php`, {
+        method: "POST",
+        body: JSON.stringify({
+          phoneNo: phone,
+        }),
+      }).catch((err) => {
+        console.log(err);
+      });
+    } else {
+      fetch(`${endpoint}/WorkingBot.php`, {
+        method: "POST",
+        body: JSON.stringify({
+          tableNo: tableNumber,
+        }),
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+    setIsCardModalOpen(true);
+  };
+
   const closeCardModal = () => setIsCardModalOpen(false);
 
   const [count, setCount] = useState(1);
@@ -74,16 +95,6 @@ const LandingPage = () => {
       .catch((err) => {
         console.log(err);
       });
-    fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`
-    )
-      .then((res) => res.json())
-      .then((res) => {
-        setBtcPrice(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   }, []);
 
   const filteredStockItems = stockItems.filter((item) => {
@@ -101,30 +112,45 @@ const LandingPage = () => {
   };
 
   const closeModal = () => {
-    setCount(1);
-    setIsModalOpen({ ...isModalOpen, state: false }); // Close the modal
+    if (tableNumber == "" || tableNumber == undefined || tableNumber == null) {
+      if (phone == "") {
+        toast("Phone number cannot be empty!", {
+          position: "top-right",
+          autoClose: 2000,
+          type: "info",
+          theme: "light",
+        });
+        return;
+      } else {
+        setCount(1);
+        setIsModalOpen({ ...isModalOpen, state: false });
+      }
+    } else {
+      setCount(1);
+      setIsModalOpen({ ...isModalOpen, state: false });
+    }
   };
 
   const addToCart = () => {
-      try {
-        setCart([
-          ...cart,
-          {
-            ...selectedItem,
-            total: Number(selectedItem.Price) * count,
-            quantity: count,
-            phone,
-          },
-        ]);
-        toast("Added to cart", {
-          position: "top-right",
-          autoClose: 5000,
-          type: "success",
-          theme: "light",
-        });
-      } catch (error) {
-        console.log(error);
-      }
+    try {
+      setCart([
+        ...cart,
+        {
+          ...selectedItem,
+          total: Number(selectedItem.Price) * count,
+          quantity: count,
+          phone,
+        },
+      ]);
+      toast("Added to cart", {
+        position: "top-right",
+        autoClose: 5000,
+        type: "success",
+        theme: "light",
+      });
+    } catch (error) {
+      console.log(error);
+    }
     closeModal();
   };
 
@@ -143,7 +169,7 @@ const LandingPage = () => {
           className="w-18 h-14 rounded-full"
           alt="Logo"
         />
-        <div className="relative">
+        <div className="sticky top-[0]">
           <img
             src="./Assets/shopping-cart-svgrepo-com.svg"
             alt="Cart"
@@ -237,7 +263,7 @@ const LandingPage = () => {
                       alt={item.name}
                       className="w-full aspect-square object-cover mb-4"
                     />
-                    <h3 className="text-lg w-56 text-ellipsis font-semibold">
+                    <h3 className="text-lg w-48 truncate text-ellipsis font-semibold">
                       {item.Item}
                     </h3>
                     <div className="flex justify-between items-center mt-4">
@@ -268,7 +294,7 @@ const LandingPage = () => {
             <img
               src={`${mediaEndpoint}${selectedItem.Image}`}
               alt={selectedItem.Name}
-              className="w-full h-64 aspect-square object-cover my-4"
+              className="w-full h-64 aspect-square object-contain my-4"
             />
 
             <div className="flex justify-between">
